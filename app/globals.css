@@ -1,0 +1,56 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: #0A0A0A;
+  color: #FFFFFF;
+}
+
+body {
+  font-family: Inter, system-ui, sans-serif;
+  background:
+    linear-gradient(180deg, rgba(255, 215, 0, 0.035), transparent 260px),
+    #0A0A0A;
+}
+
+input,
+textarea,
+select {
+  background: #111111;
+  border: 1px solid #2A2A2A;
+  color: #FFFFFF;
+  outline: none;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: #FFD700;
+  box-shadow: 0 0 0 1px rgba(255, 215, 0, 0.25);
+}
+
+table {
+  width: 100%;
+}
+
+::selection {
+  background: rgba(255, 215, 0, 0.28);
+}
+
+button,
+a,
+input,
+textarea,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
