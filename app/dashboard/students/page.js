@@ -94,7 +94,7 @@ export default function StudentsPage() {
   });
 
   const coursesQuery = useQuery({
-    queryKey: ['courses'],
+    queryKey: ['courses-list'],
     queryFn: () => api.get('/admin/courses').then((r) => r.data.courses),
   });
 
