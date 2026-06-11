@@ -1,56 +1,113 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;0,14..32,900;1,14..32,400&family=JetBrains+Mono:wght@400;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-* {
+/* ─── Base Reset ─────────────────────────────────────────── */
+*, *::before, *::after {
   box-sizing: border-box;
 }
 
-html,
-body {
+html, body {
   margin: 0;
   min-height: 100%;
-  background: #0A0A0A;
+  background: #080808;
   color: #FFFFFF;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
   font-family: Inter, system-ui, sans-serif;
   background:
-    linear-gradient(180deg, rgba(255, 215, 0, 0.035), transparent 260px),
-    #0A0A0A;
+    radial-gradient(ellipse 80% 40% at 50% -20%, rgba(255,215,0,0.055) 0%, transparent 60%),
+    #080808;
 }
 
+/* ─── Form Elements ──────────────────────────────────────── */
 input,
 textarea,
 select {
-  background: #111111;
+  background: #131313;
   border: 1px solid #2A2A2A;
   color: #FFFFFF;
   outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 input:focus,
 textarea:focus,
 select:focus {
   border-color: #FFD700;
-  box-shadow: 0 0 0 1px rgba(255, 215, 0, 0.25);
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.12);
 }
 
+input::placeholder,
+textarea::placeholder {
+  color: #555;
+}
+
+/* ─── Scrollbar ──────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #111;
+}
+::-webkit-scrollbar-thumb {
+  background: #2A2A2A;
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #444;
+}
+
+/* ─── Table ──────────────────────────────────────────────── */
 table {
   width: 100%;
+  border-collapse: collapse;
 }
 
+/* ─── Selection ──────────────────────────────────────────── */
 ::selection {
-  background: rgba(255, 215, 0, 0.28);
+  background: rgba(255, 215, 0, 0.22);
+  color: #fff;
 }
 
+/* ─── Tap highlight ──────────────────────────────────────── */
 button,
 a,
 input,
 textarea,
 select {
   -webkit-tap-highlight-color: transparent;
+}
+
+/* ─── Modal animation ────────────────────────────────────── */
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal-enter {
+  animation: modal-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ─── Shimmer / skeleton ─────────────────────────────────── */
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to   { background-position:  200% 0; }
+}
+
+/* ─── Smooth transitions ─────────────────────────────────── */
+a, button {
+  transition: opacity 0.15s ease, background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
