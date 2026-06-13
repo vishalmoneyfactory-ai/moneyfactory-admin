@@ -153,6 +153,7 @@ function CourseForm({ editing, onSave, onCancel }) {
         <Input name="title" label="Title" defaultValue={editing.title} required />
         <Input name="price" label="Price (₹)" type="number" defaultValue={editing.price} />
         <Input name="category" label="Category" defaultValue={editing.category} />
+        <Input name="validityDays" label="Validity Days (0 = Lifetime)" type="number" min="0" defaultValue={editing.validityDays ?? 0} />
         <div className="space-y-2">
           <label className="block text-sm font-medium text-muted">Thumbnail URL</label>
           <input
@@ -235,6 +236,7 @@ export default function CoursesPage() {
       body.thumbnail = upload.data.url;
     }
     body.price = Number(body.price || 0);
+    body.validityDays = Number(body.validityDays || 0);
     body.isFree = body.isFree === 'on';
     body.isBundle = body.isBundle === 'on';
     body.isActive = body.isActive === 'on';

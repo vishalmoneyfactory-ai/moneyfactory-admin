@@ -32,6 +32,12 @@ export default function SettingsPage() {
         whatsapp: body.whatsapp,
         socialLinks: { instagram: body.instagram, youtube: body.youtube },
       },
+      appDownloads: {
+        android: body.androidDownloadLink,
+        ios: body.iosDownloadLink,
+        website: body.websiteLink,
+      },
+      referralRewardAmount: Number(body.referralRewardAmount || 1000),
     });
     toast.success('Settings saved');
     qc.invalidateQueries({ queryKey: ['settings'] });
@@ -61,12 +67,14 @@ export default function SettingsPage() {
   }
 
   const company = settings.data?.company || {};
+  const appDownloads = settings.data?.appDownloads || {};
   return (
     <>
       <Header title="Settings" />
       <main className="space-y-4 p-4 sm:space-y-6 sm:p-8">
         <form onSubmit={saveSettings} className="grid grid-cols-1 gap-4 rounded-lg border border-border bg-card p-4 sm:p-5 sm:grid-cols-2">
           <Input name="bundlePrice" label="Bundle Price" type="number" defaultValue={settings.data?.bundlePrice || 4999} />
+          <Input name="referralRewardAmount" label="Referral Reward Amount" type="number" defaultValue={settings.data?.referralRewardAmount || 1000} />
           <label className="flex items-center gap-2 text-sm text-white">
             <input name="maintenanceMode" type="checkbox" defaultChecked={settings.data?.maintenanceMode} className="accent-gold" />
             Maintenance Mode
@@ -76,6 +84,9 @@ export default function SettingsPage() {
           <Input name="whatsapp" label="WhatsApp Number" defaultValue={company.whatsapp} />
           <Input name="instagram" label="Instagram" defaultValue={company.socialLinks?.instagram} />
           <Input name="youtube" label="YouTube" defaultValue={company.socialLinks?.youtube} />
+          <Input name="androidDownloadLink" label="Android Download Link" defaultValue={appDownloads.android} />
+          <Input name="iosDownloadLink" label="iOS Download Link" defaultValue={appDownloads.ios} />
+          <Input name="websiteLink" label="Website Link (Optional)" defaultValue={appDownloads.website} />
           <label className="col-span-full space-y-2 text-sm">
             <span className="text-muted">Company Description</span>
             <textarea name="description" className="min-h-24 w-full rounded-md border border-border bg-secondary p-3 text-white focus:border-gold focus:outline-none" defaultValue={company.description} />

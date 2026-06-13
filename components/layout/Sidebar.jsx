@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { BarChart3, BookOpen, LogOut, MessageSquare, Receipt, Settings, Shield, Tag, Users, X } from 'lucide-react';
+import { BarChart3, BookOpen, HandCoins, LogOut, MessageSquare, Receipt, Settings, Shield, Tag, Users, X } from 'lucide-react';
 import { clearSession, getUser } from '../../lib/auth';
 import { useSidebar } from './SidebarContext';
 
@@ -11,6 +11,7 @@ const items = [
   ['Courses', '/dashboard/courses', BookOpen],
   ['Students', '/dashboard/students', Users],
   ['Orders', '/dashboard/orders', Receipt],
+  ['Referrals', '/dashboard/referrals', HandCoins],
   ['Coupons', '/dashboard/coupons', Tag],
   ['Notifications', '/dashboard/notifications', MessageSquare],
   ['Settings', '/dashboard/settings', Settings],

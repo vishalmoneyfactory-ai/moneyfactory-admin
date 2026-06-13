@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Search, Shield, ShieldOff, Users, ChevronDown } from 'lucide-react';
+import { ChevronDown, Search, Shield, ShieldOff, Users } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../../lib/axios';
 import Header from '../../../components/layout/Header';
@@ -10,7 +10,6 @@ import Button from '../../../components/ui/Button';
 import Badge from '../../../components/ui/Badge';
 import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 
-/* ─── Grant Course Dropdown ──────────────────────────────────── */
 function GrantDropdown({ student, courses, onGrant }) {
   return (
     <div className="relative">
@@ -24,7 +23,7 @@ function GrantDropdown({ student, courses, onGrant }) {
           }
         }}
       >
-        <option value="" disabled>Grant access…</option>
+        <option value="" disabled>Grant access...</option>
         {courses?.filter((c) => !c.isBundle).map((c) => (
           <option key={c._id} value={c._id}>{c.title}</option>
         ))}
@@ -34,13 +33,13 @@ function GrantDropdown({ student, courses, onGrant }) {
   );
 }
 
-/* ─── Student Row ────────────────────────────────────────────── */
 function StudentRow({ student, courses, onBanToggle, onGrant }) {
   const enrolledLabel = student.hasBundle
     ? 'Bundle (All Courses)'
     : student.purchasedCourses?.length > 0
       ? student.purchasedCourses.map((c) => c.title).join(', ')
-      : '—';
+      : '-';
+  const referralStats = `${student.referralCode || 'No code'} | ${student.totalReferrals || 0} refs | Rs ${student.walletBalance || 0}`;
 
   return (
     <tr className="border-t border-border align-middle transition hover:bg-secondary/50">
@@ -50,20 +49,22 @@ function StudentRow({ student, courses, onBanToggle, onGrant }) {
             {(student.name || student.email || '?').slice(0, 1).toUpperCase()}
           </div>
           <div className="min-w-0">
-            <div className="truncate text-sm font-semibold text-white">{student.name || '—'}</div>
+            <div className="truncate text-sm font-semibold text-white">{student.name || '-'}</div>
             <div className="truncate text-xs text-muted">{student.email}</div>
+            <div className="truncate text-xs text-muted">{student.phone || 'No phone'} | {student.loginProvider || 'firebase'}</div>
           </div>
         </div>
       </td>
       <td className="pr-4 text-sm text-muted max-w-[180px]">
         <div className="truncate" title={enrolledLabel}>{enrolledLabel}</div>
       </td>
-      <td className="pr-4 font-mono text-sm text-gold whitespace-nowrap">₹{student.totalSpent ?? 0}</td>
+      <td className="pr-4 font-mono text-sm text-gold whitespace-nowrap">Rs {student.totalSpent ?? 0}</td>
+      <td className="pr-4 text-xs text-muted max-w-[190px]">
+        <div className="truncate" title={referralStats}>{referralStats}</div>
+      </td>
       <td className="pr-4 text-xs text-muted whitespace-nowrap">{new Date(student.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
       <td className="pr-4">
-        <Badge tone={student.isActive ? 'success' : 'error'}>
-          {student.isActive ? 'Active' : 'Banned'}
-        </Badge>
+        <Badge tone={student.isActive ? 'success' : 'error'}>{student.isActive ? 'Active' : 'Banned'}</Badge>
       </td>
       <td className="space-y-2 py-2 pr-4">
         <Button
@@ -73,15 +74,12 @@ function StudentRow({ student, courses, onBanToggle, onGrant }) {
         >
           {student.isActive ? <><ShieldOff size={12} /> Ban</> : <><Shield size={12} /> Unban</>}
         </Button>
-        {!student.hasBundle && (
-          <GrantDropdown student={student} courses={courses} onGrant={onGrant} />
-        )}
+        {!student.hasBundle && <GrantDropdown student={student} courses={courses} onGrant={onGrant} />}
       </td>
     </tr>
   );
 }
 
-/* ─── Main Page ──────────────────────────────────────────────── */
 export default function StudentsPage() {
   const qc = useQueryClient();
   const [q, setQ] = useState('');
@@ -99,13 +97,9 @@ export default function StudentsPage() {
   });
 
   const grant = useCallback(async (student, courseId, hasAccess) => {
-    try {
-      await api.put(`/admin/students/${student._id}/access`, { courseId, hasAccess });
-      qc.invalidateQueries({ queryKey: ['students'] });
-      toast.success('Access granted');
-    } catch {
-      // silently handled
-    }
+    await api.put(`/admin/students/${student._id}/access`, { courseId, hasAccess });
+    qc.invalidateQueries({ queryKey: ['students'] });
+    toast.success('Access granted');
   }, [qc]);
 
   const banToggle = useCallback(async (student) => {
@@ -115,19 +109,16 @@ export default function StudentsPage() {
 
   const students = studentsQuery.data;
   const courses = coursesQuery.data;
-  const isLoading = studentsQuery.isLoading;
-  const isError = studentsQuery.isError;
 
   return (
     <>
       <Header title="Students" />
       <main className="space-y-4 p-4 sm:space-y-6 sm:p-8">
-        {/* Search & Filter */}
         <div className="flex flex-col gap-3 sm:flex-row">
           <div className="relative flex-1">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
             <input
-              placeholder="Search by name or email…"
+              placeholder="Search by name or email..."
               value={q}
               onChange={(e) => setQ(e.target.value)}
               className="w-full rounded-lg border border-border bg-card py-2.5 pl-9 pr-3 text-sm text-white placeholder-muted focus:border-gold focus:outline-none"
@@ -144,22 +135,18 @@ export default function StudentsPage() {
           </select>
         </div>
 
-        {/* Stats bar */}
         {students && (
           <div className="flex items-center gap-2 text-sm text-muted">
             <Users size={14} />
             <span>{students.length} student{students.length !== 1 ? 's' : ''} found</span>
-            {studentsQuery.isFetching && <span className="ml-2 text-gold text-xs">Refreshing…</span>}
+            {studentsQuery.isFetching && <span className="ml-2 text-gold text-xs">Refreshing...</span>}
           </div>
         )}
 
-        {/* Table with horizontal scroll */}
         <section className="rounded-xl border border-border bg-card overflow-hidden">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-20">
-              <LoadingSpinner />
-            </div>
-          ) : isError ? (
+          {studentsQuery.isLoading ? (
+            <div className="flex items-center justify-center py-20"><LoadingSpinner /></div>
+          ) : studentsQuery.isError ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <p className="text-lg font-semibold text-white">Failed to load students</p>
               <p className="mt-1 text-sm text-muted">Please try again</p>
@@ -173,12 +160,13 @@ export default function StudentsPage() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[700px] text-sm">
+              <table className="w-full min-w-[900px] text-sm">
                 <thead>
                   <tr className="border-b border-border bg-secondary/50">
                     <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted">Student</th>
                     <th className="pr-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted">Courses</th>
                     <th className="pr-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted">Spent</th>
+                    <th className="pr-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted">Referrals</th>
                     <th className="pr-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted">Joined</th>
                     <th className="pr-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted">Status</th>
                     <th className="pr-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted">Actions</th>
@@ -186,13 +174,7 @@ export default function StudentsPage() {
                 </thead>
                 <tbody>
                   {students.map((s) => (
-                    <StudentRow
-                      key={s._id}
-                      student={s}
-                      courses={courses}
-                      onBanToggle={banToggle}
-                      onGrant={grant}
-                    />
+                    <StudentRow key={s._id} student={s} courses={courses} onBanToggle={banToggle} onGrant={grant} />
                   ))}
                 </tbody>
               </table>
