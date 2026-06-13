@@ -111,3 +111,26 @@ select {
 a, button {
   transition: opacity 0.15s ease, background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
+
+/* ─── Mobile safe-area & touch targets ───────────────────── */
+@supports (padding: max(0px)) {
+  .safe-bottom {
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+}
+
+/* Minimum touch target size for interactive elements */
+button, a, select, input[type="checkbox"], input[type="radio"] {
+  min-height: 36px;
+}
+
+/* Prevent horizontal overflow on small screens */
+html, body {
+  overflow-x: hidden;
+}
+
+/* Mobile scrollable tables should show a subtle hint shadow */
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+}
+

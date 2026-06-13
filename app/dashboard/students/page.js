@@ -44,7 +44,7 @@ function StudentRow({ student, courses, onBanToggle, onGrant }) {
 
   return (
     <tr className="border-t border-border align-middle transition hover:bg-secondary/50">
-      <td className="py-3 pr-4">
+      <td className="py-3 pr-4 pl-5">
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-secondary text-sm font-bold text-gold">
             {(student.name || student.email || '?').slice(0, 1).toUpperCase()}
@@ -55,17 +55,17 @@ function StudentRow({ student, courses, onBanToggle, onGrant }) {
           </div>
         </div>
       </td>
-      <td className="pr-4 text-sm text-muted max-w-[220px]">
+      <td className="pr-4 text-sm text-muted max-w-[180px]">
         <div className="truncate" title={enrolledLabel}>{enrolledLabel}</div>
       </td>
-      <td className="pr-4 font-mono text-sm text-gold">₹{student.totalSpent ?? 0}</td>
-      <td className="pr-4 text-xs text-muted">{new Date(student.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+      <td className="pr-4 font-mono text-sm text-gold whitespace-nowrap">₹{student.totalSpent ?? 0}</td>
+      <td className="pr-4 text-xs text-muted whitespace-nowrap">{new Date(student.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
       <td className="pr-4">
         <Badge tone={student.isActive ? 'success' : 'error'}>
           {student.isActive ? 'Active' : 'Banned'}
         </Badge>
       </td>
-      <td className="space-y-2 py-2">
+      <td className="space-y-2 py-2 pr-4">
         <Button
           variant={student.isActive ? 'danger' : 'solid'}
           className="w-full text-xs px-2 py-1"
@@ -90,7 +90,7 @@ export default function StudentsPage() {
   const studentsQuery = useQuery({
     queryKey: ['students', q, status],
     queryFn: () => api.get('/admin/students', { params: { q, status } }).then((r) => r.data.students),
-    placeholderData: (prev) => prev, // keeps previous data visible while refetching (replaces keepPreviousData)
+    placeholderData: (prev) => prev,
   });
 
   const coursesQuery = useQuery({
@@ -121,9 +121,9 @@ export default function StudentsPage() {
   return (
     <>
       <Header title="Students" />
-      <main className="space-y-6 p-8">
+      <main className="space-y-4 p-4 sm:space-y-6 sm:p-8">
         {/* Search & Filter */}
-        <div className="flex gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row">
           <div className="relative flex-1">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
             <input
@@ -153,7 +153,7 @@ export default function StudentsPage() {
           </div>
         )}
 
-        {/* Table */}
+        {/* Table with horizontal scroll */}
         <section className="rounded-xl border border-border bg-card overflow-hidden">
           {isLoading ? (
             <div className="flex items-center justify-center py-20">
@@ -173,7 +173,7 @@ export default function StudentsPage() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full min-w-[700px] text-sm">
                 <thead>
                   <tr className="border-b border-border bg-secondary/50">
                     <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted">Student</th>

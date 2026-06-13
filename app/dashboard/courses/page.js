@@ -149,7 +149,7 @@ function CourseForm({ editing, onSave, onCancel }) {
 
   return (
     <form onSubmit={handleSave} className="space-y-5">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Input name="title" label="Title" defaultValue={editing.title} required />
         <Input name="price" label="Price (₹)" type="number" defaultValue={editing.price} />
         <Input name="category" label="Category" defaultValue={editing.category} />
@@ -303,27 +303,29 @@ export default function CoursesPage() {
         action={
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setShowVideoUpload(true)}>
-              <Upload size={16} /> Upload Video
+              <Upload size={16} />
+              <span className="hidden sm:inline"> Upload Video</span>
             </Button>
             <Button onClick={() => setEditing({ title: '', price: 0, isActive: true })}>
-              <Plus size={16} /> Add Course
+              <Plus size={16} />
+              <span className="hidden sm:inline"> Add Course</span>
             </Button>
           </div>
         }
       />
 
-      <main className="space-y-6 p-8">
+      <main className="space-y-4 p-4 sm:space-y-6 sm:p-8">
         {/* Bundle Deal Banner */}
         {bundle && (
           <section className="relative overflow-hidden rounded-xl border border-gold/60 p-5"
             style={{ background: 'linear-gradient(135deg, rgba(255,215,0,0.08) 0%, rgba(255,215,0,0.03) 100%)' }}>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <div className="text-xs font-semibold uppercase tracking-widest text-gold/60">Bundle Deal</div>
-                <div className="mt-1 text-2xl font-black text-gold">{bundle.title}</div>
+                <div className="mt-1 text-xl font-black text-gold sm:text-2xl">{bundle.title}</div>
                 <div className="mt-1 font-mono text-muted">₹{bundle.price} · Save Rs 1996</div>
               </div>
-              <Button variant="outline" onClick={() => setEditing(bundle)}>
+              <Button variant="outline" onClick={() => setEditing(bundle)} className="self-start sm:self-center">
                 <Edit3 size={14} /> Edit Bundle
               </Button>
             </div>
@@ -333,7 +335,7 @@ export default function CoursesPage() {
 
         {/* Course Offers */}
         <section className="rounded-xl border border-border bg-card p-5">
-          <div className="mb-4 flex items-center justify-between">
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="flex items-center gap-2">
                 <Percent size={18} className="text-gold" />
@@ -341,9 +343,9 @@ export default function CoursesPage() {
               </div>
               <p className="mt-1 text-sm text-muted">Apply a percentage discount to one course or every paid course.</p>
             </div>
-            <Button type="button" variant="outline" onClick={clearOffers}>Clear All Offers</Button>
+            <Button type="button" variant="outline" onClick={clearOffers} className="self-start sm:self-center">Clear All Offers</Button>
           </div>
-          <form onSubmit={saveOffer} className="grid grid-cols-4 gap-4 items-end">
+          <form onSubmit={saveOffer} className="grid grid-cols-1 gap-4 items-end sm:grid-cols-2 lg:grid-cols-4">
             <label className="space-y-2 text-sm">
               <span className="font-medium text-muted">Apply To</span>
               <select
@@ -388,7 +390,7 @@ export default function CoursesPage() {
         ) : (
           <>
             {regularCourses.length > 0 && (
-              <div className="grid grid-cols-2 gap-4 xl:grid-cols-3">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {regularCourses.map((course) => (
                   <CourseCard
                     key={course._id}
@@ -425,7 +427,7 @@ export default function CoursesPage() {
         title="Upload Video to Bunny Stream"
       >
         <form onSubmit={uploadVideo} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <label className="space-y-2 text-sm col-span-2">
               <span className="font-medium text-muted">Select Course</span>
               <select

@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { BarChart3, BookOpen, LogOut, MessageSquare, Receipt, Settings, Shield, Tag, Users } from 'lucide-react';
+import { BarChart3, BookOpen, LogOut, MessageSquare, Receipt, Settings, Shield, Tag, Users, X } from 'lucide-react';
 import { clearSession, getUser } from '../../lib/auth';
+import { useSidebar } from './SidebarContext';
 
 const items = [
   ['Dashboard', '/dashboard', BarChart3],
@@ -20,31 +21,35 @@ export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const user = getUser();
+  const { open, close } = useSidebar();
+
   const logout = () => {
     clearSession();
     router.replace('/login');
   };
 
-  return (
-    <aside
-      className="fixed left-0 top-0 flex h-screen w-72 flex-col border-r border-border"
-      style={{
-        background: 'linear-gradient(180deg, #0E0E0E 0%, #0A0A0A 100%)',
-        borderColor: 'rgba(255,255,255,0.06)',
-      }}
-    >
+  const navContent = (
+    <>
       {/* Logo */}
       <div className="flex items-center gap-3 border-b px-6 py-5" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
         <div
-          className="flex h-9 w-9 items-center justify-center rounded-lg"
+          className="flex h-9 w-9 items-center justify-center rounded-lg shrink-0"
           style={{ background: 'linear-gradient(135deg, #FFD700 0%, #E6A800 100%)', boxShadow: '0 0 20px rgba(255,215,0,0.3)' }}
         >
           <span className="text-base font-black text-black">M</span>
         </div>
-        <div>
+        <div className="min-w-0 flex-1">
           <div className="text-base font-black tracking-tight text-white">Money Factory</div>
           <div className="text-xs font-medium text-muted">Admin Command Center</div>
         </div>
+        {/* Close button – mobile only */}
+        <button
+          onClick={close}
+          className="ml-auto flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted hover:bg-white/10 hover:text-white transition lg:hidden"
+          aria-label="Close sidebar"
+        >
+          <X size={18} />
+        </button>
       </div>
 
       {/* Nav */}
@@ -55,6 +60,7 @@ export default function Sidebar() {
             <Link
               key={href}
               href={href}
+              onClick={close}
               className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
                 active
                   ? 'bg-gold/10 text-gold'
@@ -78,6 +84,7 @@ export default function Sidebar() {
       <div className="border-t p-3" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
         <Link
           href="/dashboard/profile"
+          onClick={close}
           className="mb-2 flex items-center gap-3 rounded-lg p-3 transition hover:bg-white/5"
         >
           <div
@@ -109,6 +116,45 @@ export default function Sidebar() {
           <LogOut size={16} /> Sign Out
         </button>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* ── Desktop sidebar (always visible on lg+) ── */}
+      <aside
+        className="fixed left-0 top-0 hidden h-screen w-72 flex-col border-r lg:flex"
+        style={{
+          background: 'linear-gradient(180deg, #0E0E0E 0%, #0A0A0A 100%)',
+          borderColor: 'rgba(255,255,255,0.06)',
+        }}
+      >
+        {navContent}
+      </aside>
+
+      {/* ── Mobile overlay backdrop ── */}
+      {open && (
+        <div
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
+          onClick={close}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* ── Mobile drawer ── */}
+      <aside
+        className={`fixed left-0 top-0 z-50 flex h-screen w-72 flex-col border-r transition-transform duration-300 ease-in-out lg:hidden ${
+          open ? 'translate-x-0' : '-translate-x-full'
+        }`}
+        style={{
+          background: 'linear-gradient(180deg, #0E0E0E 0%, #0A0A0A 100%)',
+          borderColor: 'rgba(255,255,255,0.06)',
+        }}
+        aria-modal={open}
+        role="dialog"
+      >
+        {navContent}
+      </aside>
+    </>
   );
 }

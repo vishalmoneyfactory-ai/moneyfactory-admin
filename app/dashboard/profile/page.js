@@ -74,7 +74,7 @@ export default function AdminProfilePage() {
   return (
     <>
       <Header title="Admin Profile" action={<Button variant="outline" onClick={logout}><LogOut size={16} /> Logout</Button>} />
-      <main className="grid gap-6 p-8 xl:grid-cols-[360px_1fr]">
+      <main className="grid gap-4 p-4 sm:gap-6 sm:p-8 xl:grid-cols-[360px_1fr]">
         <section className="rounded-lg border border-gold/40 bg-card p-6 shadow-[0_24px_70px_rgba(0,0,0,0.35)]">
           <div className="mx-auto flex h-32 w-32 items-center justify-center overflow-hidden rounded-lg border border-gold/50 bg-primary text-5xl font-black text-gold">
             {photo ? <img src={photo} alt="" className="h-full w-full object-cover" /> : (user?.name || user?.email || 'A').slice(0, 1).toUpperCase()}
