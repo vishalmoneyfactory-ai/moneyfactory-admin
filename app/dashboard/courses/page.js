@@ -153,7 +153,7 @@ function CourseForm({ editing, onSave, onCancel }) {
         <Input name="title" label="Title" defaultValue={editing.title} required />
         <Input name="price" label="Price (₹)" type="number" defaultValue={editing.price} />
         <Input name="category" label="Category" defaultValue={editing.category} />
-        <Input name="validityDays" label="Validity Days (0 = Lifetime)" type="number" min="0" defaultValue={editing.validityDays ?? 0} />
+        <Input name="validityDays" label="Validity Days" type="number" min="30" defaultValue={30} disabled />
         <div className="space-y-2">
           <label className="block text-sm font-medium text-muted">Thumbnail URL</label>
           <input
