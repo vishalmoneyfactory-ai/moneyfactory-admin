@@ -37,7 +37,12 @@ export default function SettingsPage() {
         ios: body.iosDownloadLink,
         website: body.websiteLink,
       },
-      referralRewardAmount: Number(body.referralRewardAmount || 1000),
+      earnVideo: {
+        bunnyVideoId: body.earnVideoId,
+        bunnyLibraryId: body.earnLibraryId,
+      },
+      referralCourseRewardAmount: Number(body.referralCourseRewardAmount || 300),
+      referralBundleRewardAmount: Number(body.referralBundleRewardAmount || 1000),
     });
     toast.success('Settings saved');
     qc.invalidateQueries({ queryKey: ['settings'] });
@@ -68,13 +73,15 @@ export default function SettingsPage() {
 
   const company = settings.data?.company || {};
   const appDownloads = settings.data?.appDownloads || {};
+  const earnVideo = settings.data?.earnVideo || {};
   return (
     <>
       <Header title="Settings" />
       <main className="space-y-4 p-4 sm:space-y-6 sm:p-8">
         <form onSubmit={saveSettings} className="grid grid-cols-1 gap-4 rounded-lg border border-border bg-card p-4 sm:p-5 sm:grid-cols-2">
           <Input name="bundlePrice" label="Bundle Price" type="number" defaultValue={settings.data?.bundlePrice || 4999} />
-          <Input name="referralRewardAmount" label="Referral Reward Amount" type="number" defaultValue={settings.data?.referralRewardAmount || 1000} />
+          <Input name="referralCourseRewardAmount" label="Course Referral Reward" type="number" defaultValue={settings.data?.referralCourseRewardAmount || 300} />
+          <Input name="referralBundleRewardAmount" label="Bundle Referral Reward" type="number" defaultValue={settings.data?.referralBundleRewardAmount || 1000} />
           <label className="flex items-center gap-2 text-sm text-white">
             <input name="maintenanceMode" type="checkbox" defaultChecked={settings.data?.maintenanceMode} className="accent-gold" />
             Maintenance Mode
@@ -87,6 +94,8 @@ export default function SettingsPage() {
           <Input name="androidDownloadLink" label="Android Download Link" defaultValue={appDownloads.android} />
           <Input name="iosDownloadLink" label="iOS Download Link" defaultValue={appDownloads.ios} />
           <Input name="websiteLink" label="Website Link (Optional)" defaultValue={appDownloads.website} />
+          <Input name="earnVideoId" label="Earn Bunny Video ID" defaultValue={earnVideo.bunnyVideoId} />
+          <Input name="earnLibraryId" label="Earn Bunny Library ID" defaultValue={earnVideo.bunnyLibraryId} />
           <label className="col-span-full space-y-2 text-sm">
             <span className="text-muted">Company Description</span>
             <textarea name="description" className="min-h-24 w-full rounded-md border border-border bg-secondary p-3 text-white focus:border-gold focus:outline-none" defaultValue={company.description} />

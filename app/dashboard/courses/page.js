@@ -85,10 +85,10 @@ function CourseCard({ course, onEdit, onDelete }) {
             <span className="mt-0.5 font-mono text-sm font-bold text-gold">
               {course.isFree ? 'Free' : course.hasOffer
                 ? <>
-                    <span className="mr-1 text-xs text-muted line-through">₹{course.originalPrice}</span>
-                    ₹{course.effectivePrice}
+                    <span className="mr-1 text-xs text-muted line-through">Rs {course.originalPrice}</span>
+                    Rs {course.effectivePrice}
                   </>
-                : `₹${course.price}`
+                : `Rs ${course.price}`
               }
             </span>
           </div>
@@ -151,7 +151,7 @@ function CourseForm({ editing, onSave, onCancel }) {
     <form onSubmit={handleSave} className="space-y-5">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Input name="title" label="Title" defaultValue={editing.title} required />
-        <Input name="price" label="Price (₹)" type="number" defaultValue={editing.price} />
+        <Input name="price" label="Price (Rs)" type="number" defaultValue={editing.price} />
         <Input name="category" label="Category" defaultValue={editing.category} />
         <Input name="validityDays" label="Validity Days" type="number" min="30" defaultValue={30} disabled />
         <div className="space-y-2">
@@ -171,7 +171,7 @@ function CourseForm({ editing, onSave, onCancel }) {
         <div className="flex-1">
           <p className="text-sm font-semibold text-gold">Upload Thumbnail Image</p>
           <p className="mt-0.5 text-xs text-muted">
-            {thumbnailFile ? thumbnailFile.name : 'PNG or JPG — overrides URL field when selected'}
+            {thumbnailFile ? thumbnailFile.name : 'PNG or JPG - overrides URL field when selected'}
           </p>
         </div>
         <input type="file" accept="image/*" className="hidden" onChange={(e) => setThumbnailFile(e.target.files?.[0] || null)} />
@@ -204,7 +204,7 @@ function CourseForm({ editing, onSave, onCancel }) {
       </div>
 
       <div className="flex gap-3 border-t border-border pt-4">
-        <Button disabled={saving}>{saving ? 'Saving…' : 'Save Course'}</Button>
+        <Button disabled={saving}>{saving ? 'Saving...' : 'Save Course'}</Button>
         <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
       </div>
     </form>
@@ -325,7 +325,7 @@ export default function CoursesPage() {
               <div>
                 <div className="text-xs font-semibold uppercase tracking-widest text-gold/60">Bundle Deal</div>
                 <div className="mt-1 text-xl font-black text-gold sm:text-2xl">{bundle.title}</div>
-                <div className="mt-1 font-mono text-muted">₹{bundle.price} · Save Rs 1996</div>
+                <div className="mt-1 font-mono text-muted">Rs {bundle.price} - Save Rs 1996</div>
               </div>
               <Button variant="outline" onClick={() => setEditing(bundle)} className="self-start sm:self-center">
                 <Edit3 size={14} /> Edit Bundle
@@ -438,7 +438,7 @@ export default function CoursesPage() {
                 onChange={(e) => setVideo({ ...video, courseId: e.target.value })}
                 required
               >
-                <option value="">Choose a course…</option>
+                <option value="">Choose a course...</option>
                 {courses.filter((c) => !c.isBundle).map((c) => (
                   <option key={c._id} value={c._id}>{c.title}</option>
                 ))}
@@ -473,7 +473,7 @@ export default function CoursesPage() {
           </label>
           <div className="flex gap-3 border-t border-border pt-4">
             <Button disabled={uploadingVideo}>
-              <Upload size={16} /> {uploadingVideo ? 'Uploading…' : 'Upload to Bunny'}
+              <Upload size={16} /> {uploadingVideo ? 'Uploading...' : 'Upload to Bunny'}
             </Button>
             <Button type="button" variant="outline" onClick={() => setShowVideoUpload(false)}>Cancel</Button>
           </div>
