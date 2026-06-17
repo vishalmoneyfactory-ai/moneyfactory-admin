@@ -291,14 +291,15 @@ export default function CoursesPage() {
         title: video.title,
         isFreePreview: video.isFreePreview,
       });
-      const { video: dbVideo, tusEndpoint, libraryId, bunnyVideoId, apiKey } = res.data;
+      const { video: dbVideo, tusEndpoint, libraryId, bunnyVideoId, signature, expirationTime } = res.data;
 
       const file = video.file;
       const upload = new tus.Upload(file, {
         endpoint: tusEndpoint,
         retryDelays: [0, 3000, 5000, 10000, 20000],
         headers: {
-          AccessKey: apiKey,
+          AuthorizationSignature: signature,
+          AuthorizationExpire: expirationTime.toString(),
           LibraryId: libraryId.toString(),
           VideoId: bunnyVideoId,
         },
