@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ImagePlus, Plus, Save, Trash2, Upload, X, Edit3, BookOpen, Users, Video, Tag, Percent } from 'lucide-react';
+import * as tus from 'tus-js-client';
 import toast from 'react-hot-toast';
 import api from '../../../lib/axios';
 import Header from '../../../components/layout/Header';
@@ -153,6 +154,7 @@ function CourseForm({ editing, onSave, onCancel }) {
         <Input name="title" label="Title" defaultValue={editing.title} required />
         <Input name="price" label="Price (Rs)" type="number" defaultValue={editing.price} />
         <Input name="category" label="Category" defaultValue={editing.category} />
+        <Input name="bunnyCollectionId" label="Bunny Collection ID" defaultValue={editing.bunnyCollectionId} />
         <Input name="validityDays" label="Validity Days" type="number" min="30" defaultValue={30} disabled />
         <div className="space-y-2">
           <label className="block text-sm font-medium text-muted">Thumbnail URL</label>
@@ -225,6 +227,12 @@ export default function CoursesPage() {
   const [offer, setOffer] = useState({ scope: 'all', courseId: '', offerPercent: 0 });
   const [videoCourseImage, setVideoCourseImage] = useState(null);
   const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+
+  const [showImportBunny, setShowImportBunny] = useState(false);
+  const [bunnyVideos, setBunnyVideos] = useState([]);
+  const [fetchingBunny, setFetchingBunny] = useState(false);
+  const [importConfig, setImportConfig] = useState({ courseId: '', collectionId: '' });
 
   // ── handlers ──
   async function saveCourse(e, thumbnailFile) {
@@ -271,24 +279,96 @@ export default function CoursesPage() {
 
   async function uploadVideo(e) {
     e.preventDefault();
+    if (!video.file) {
+      toast.error('Please select a video file');
+      return;
+    }
     setUploadingVideo(true);
+    setUploadProgress(0);
     try {
-      const fd = new FormData();
-      Object.entries(video).forEach(([k, v]) => v !== null && fd.append(k === 'file' ? 'video' : k, v));
-      await api.post('/videos/upload', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
-      if (videoCourseImage && video.courseId) {
-        const image = new FormData();
-        image.append('image', videoCourseImage);
-        const upload = await api.post('/media', image, { headers: { 'Content-Type': 'multipart/form-data' } });
-        await api.put(`/courses/${video.courseId}`, { thumbnail: upload.data.url });
-      }
-      toast.success('Video uploaded to Bunny Stream');
-      setVideo({ courseId: '', title: '', file: null, isFreePreview: false });
-      setVideoCourseImage(null);
-      setShowVideoUpload(false);
-      qc.invalidateQueries({ queryKey: ['courses'] });
-    } finally {
+      const res = await api.post('/videos/create-entry', {
+        courseId: video.courseId,
+        title: video.title,
+        isFreePreview: video.isFreePreview,
+      });
+      const { video: dbVideo, tusEndpoint, libraryId, bunnyVideoId, apiKey } = res.data;
+
+      const file = video.file;
+      const upload = new tus.Upload(file, {
+        endpoint: tusEndpoint,
+        retryDelays: [0, 3000, 5000, 10000, 20000],
+        headers: {
+          AccessKey: apiKey,
+          LibraryId: libraryId.toString(),
+          VideoId: bunnyVideoId,
+        },
+        metadata: {
+          filename: file.name,
+          filetype: file.type,
+        },
+        onError: function (error) {
+          console.log('Failed because: ' + error);
+          toast.error('Upload failed: ' + error.message);
+          setUploadingVideo(false);
+        },
+        onProgress: function (bytesUploaded, bytesTotal) {
+          const percentage = ((bytesUploaded / bytesTotal) * 100).toFixed(2);
+          setUploadProgress(Number(percentage));
+        },
+        onSuccess: async function () {
+          await api.put(`/videos/${dbVideo._id}/activate`);
+          
+          if (videoCourseImage && video.courseId) {
+            const image = new FormData();
+            image.append('image', videoCourseImage);
+            const uploadRes = await api.post('/media', image, { headers: { 'Content-Type': 'multipart/form-data' } });
+            await api.put(`/courses/${video.courseId}`, { thumbnail: uploadRes.data.url });
+          }
+          
+          toast.success('Video uploaded successfully!');
+          setVideo({ courseId: '', title: '', file: null, isFreePreview: false });
+          setVideoCourseImage(null);
+          setShowVideoUpload(false);
+          setUploadingVideo(false);
+          setUploadProgress(0);
+          qc.invalidateQueries({ queryKey: ['courses'] });
+        },
+      });
+      upload.start();
+    } catch (err) {
+      toast.error('Failed to start upload');
       setUploadingVideo(false);
+    }
+  }
+
+  async function fetchBunnyVideos() {
+    setFetchingBunny(true);
+    try {
+      const res = await api.get(`/videos/bunny-library${importConfig.collectionId ? `?collectionId=${importConfig.collectionId}` : ''}`);
+      setBunnyVideos(res.data.videos);
+    } catch (err) {
+      toast.error('Failed to fetch videos from Bunny');
+    } finally {
+      setFetchingBunny(false);
+    }
+  }
+
+  async function handleImportVideo(bunnyVideo) {
+    if (!importConfig.courseId) {
+      toast.error('Select a course first');
+      return;
+    }
+    try {
+      await api.post('/videos/confirm-import', {
+        courseId: importConfig.courseId,
+        bunnyVideoId: bunnyVideo.guid,
+        title: bunnyVideo.title,
+      });
+      toast.success('Imported ' + bunnyVideo.title);
+      setBunnyVideos((prev) => prev.filter(v => v.guid !== bunnyVideo.guid));
+      qc.invalidateQueries({ queryKey: ['courses'] });
+    } catch (err) {
+      toast.error('Import failed');
     }
   }
 
@@ -307,6 +387,10 @@ export default function CoursesPage() {
             <Button variant="outline" onClick={() => setShowVideoUpload(true)}>
               <Upload size={16} />
               <span className="hidden sm:inline"> Upload Video</span>
+            </Button>
+            <Button variant="outline" onClick={() => setShowImportBunny(true)}>
+              <Video size={16} />
+              <span className="hidden sm:inline"> Import from Bunny</span>
             </Button>
             <Button onClick={() => setEditing({ title: '', price: 0, isActive: true })}>
               <Plus size={16} />
@@ -471,13 +555,73 @@ export default function CoursesPage() {
             </div>
             <input type="file" accept="image/*" className="hidden" onChange={(e) => setVideoCourseImage(e.target.files?.[0] || null)} />
           </label>
-          <div className="flex gap-3 border-t border-border pt-4">
+          <div className="flex gap-3 border-t border-border pt-4 items-center">
             <Button disabled={uploadingVideo}>
-              <Upload size={16} /> {uploadingVideo ? 'Uploading...' : 'Upload to Bunny'}
+              <Upload size={16} /> {uploadingVideo ? `Uploading ${uploadProgress}%` : 'Upload to Bunny'}
             </Button>
+            {uploadingVideo && (
+              <div className="flex-1 ml-2 mr-4">
+                <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
+                  <div className="h-full bg-gold transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
+                </div>
+              </div>
+            )}
             <Button type="button" variant="outline" onClick={() => setShowVideoUpload(false)}>Cancel</Button>
           </div>
         </form>
+      </Modal>
+
+      {/* ── Import from Bunny Modal ── */}
+      <Modal
+        open={showImportBunny}
+        onClose={() => setShowImportBunny(false)}
+        title="Import from Bunny.net"
+      >
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <label className="space-y-2 text-sm">
+              <span className="font-medium text-muted">Select Course</span>
+              <select
+                className="w-full rounded-lg border border-border bg-secondary px-3 py-2 text-white focus:border-gold focus:outline-none"
+                value={importConfig.courseId}
+                onChange={(e) => setImportConfig({ ...importConfig, courseId: e.target.value })}
+              >
+                <option value="">Choose a course...</option>
+                {courses.filter((c) => !c.isBundle).map((c) => (
+                  <option key={c._id} value={c._id}>{c.title}</option>
+                ))}
+              </select>
+            </label>
+            <label className="space-y-2 text-sm">
+              <span className="font-medium text-muted">Filter Collection ID (Optional)</span>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  className="w-full rounded-lg border border-border bg-secondary px-3 py-2 text-white placeholder-muted focus:border-gold focus:outline-none"
+                  placeholder="Bunny Collection ID"
+                  value={importConfig.collectionId}
+                  onChange={(e) => setImportConfig({ ...importConfig, collectionId: e.target.value })}
+                />
+                <Button onClick={fetchBunnyVideos} disabled={fetchingBunny}>Fetch</Button>
+              </div>
+            </label>
+          </div>
+          
+          <div className="mt-4 max-h-64 overflow-y-auto rounded-lg border border-border bg-secondary">
+            {fetchingBunny ? (
+              <div className="p-4 text-center text-muted">Fetching...</div>
+            ) : bunnyVideos.length === 0 ? (
+              <div className="p-4 text-center text-muted">No unmapped videos found. Fill Collection ID and click Fetch.</div>
+            ) : (
+              bunnyVideos.map((v) => (
+                <div key={v.guid} className="flex items-center justify-between border-b border-border p-3 last:border-0">
+                  <div className="flex-1 truncate pr-4 text-sm text-white">{v.title}</div>
+                  <Button onClick={() => handleImportVideo(v)} className="py-1 px-3 text-xs h-auto min-h-0">Import</Button>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
       </Modal>
     </>
   );
