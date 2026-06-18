@@ -277,6 +277,18 @@ export default function CoursesPage() {
     qc.invalidateQueries({ queryKey: ['courses'] });
   }
 
+  function getVideoDuration(file) {
+    return new Promise((resolve) => {
+      const videoNode = document.createElement('video');
+      videoNode.preload = 'metadata';
+      videoNode.onloadedmetadata = () => {
+        URL.revokeObjectURL(videoNode.src);
+        resolve(videoNode.duration);
+      };
+      videoNode.src = URL.createObjectURL(file);
+    });
+  }
+
   async function uploadVideo(e) {
     e.preventDefault();
     if (!video.file) {
@@ -286,14 +298,16 @@ export default function CoursesPage() {
     setUploadingVideo(true);
     setUploadProgress(0);
     try {
+      const file = video.file;
+      const durationSeconds = await getVideoDuration(file);
       const res = await api.post('/videos/create-entry', {
         courseId: video.courseId,
         title: video.title,
+        duration: durationSeconds,
         isFreePreview: video.isFreePreview,
       });
       const { video: dbVideo, tusEndpoint, libraryId, bunnyVideoId, signature, expirationTime } = res.data;
 
-      const file = video.file;
       const upload = new tus.Upload(file, {
         endpoint: tusEndpoint,
         retryDelays: [0, 3000, 5000, 10000, 20000],
