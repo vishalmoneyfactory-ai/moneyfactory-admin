@@ -467,7 +467,7 @@ export default function CoursesPage() {
                 disabled={offer.scope === 'all'}
               >
                 <option value="">Select course</option>
-                {courses.filter((c) => !c.isBundle && !c.isFree).map((c) => (
+                {courses.filter((c) => !c.isFree).map((c) => (
                   <option key={c._id} value={c._id}>{c.title}</option>
                 ))}
               </select>
