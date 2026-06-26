@@ -65,7 +65,7 @@ export default function OrdersPage() {
               <tbody>
                 {orders.data?.map((o) => (
                   <tr key={o._id} className="border-t border-border hover:bg-secondary/40 transition">
-                    <td className="py-3 pr-4 font-mono text-xs text-muted">{o.cashfreeOrderId}</td>
+                    <td className="py-3 pr-4 font-mono text-xs text-muted">{o.cashfreeOrderId || o.razorpayOrderId || '-'}</td>
                     <td className="pr-4">{o.user?.name || o.user?.email}</td>
                     <td className="pr-4 max-w-[140px] truncate">{o.isBundle ? 'Full Bundle' : o.course?.title}</td>
                     <td className="pr-4 font-mono whitespace-nowrap">Rs {o.amount}</td>
